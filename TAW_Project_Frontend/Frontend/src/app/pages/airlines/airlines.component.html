@@ -1,0 +1,225 @@
+<div class="container">
+  <div *ngIf="!mustChangePassword">
+    <button (click)="switchToUpdate()">Aggiorna Dati Compagnia</button>
+    <button (click)="switchToSetup()">Cambia Password / Setup</button>
+  </div>
+
+  <div *ngIf="!showSetup">
+    <h2>Aggiorna Compagnia Aerea</h2>
+    <form class="form-container">
+
+  <!-- Airline Info -->
+  <div class="field-group">
+    <label>
+      <img class="icon" src="../../../assets/Interface_icons/user.svg" alt="Nome">
+      Nome
+    </label>
+    <input
+      [(ngModel)]="airlineName"
+      name="airlineName"
+      placeholder="Inserisci nome compagnia">
+  </div>
+
+  <div class="field-group">
+    <label>
+      <img class="icon" src="../../../assets/Interface_icons/revenue.svg" alt="Revenue">
+      Revenue
+    </label>
+    <input
+      type="number"
+      [(ngModel)]="airlineRevenue"
+      name="airlineRevenue"
+      placeholder="Inserisci revenue">
+  </div>
+
+  <!-- Aircrafts Section -->
+  <div class="aircrafts-section">
+    <h4>
+      <img class="icon" src="../../../assets/Interface_icons/plane.svg" alt="Aerei">
+      Aerei
+    </h4>
+
+    <div *ngFor="let ac of updateData.aircrafts; let i = index" class="aircraft-card">
+
+      <!-- Header Aereo -->
+      <div class="aircraft-header">
+        <input
+          class="input aircraft-number"
+          placeholder="Numero Aereo"
+          [(ngModel)]="ac._numAircraft"
+          name="numA_update{{i}}">
+        <input
+          class="input aircraft-model"
+          placeholder="Modello"
+          [(ngModel)]="ac.modello"
+          name="modello_update{{i}}">
+        <button
+          type="button"
+          class="icon-btn remove-aircraft"
+          (click)="removeAircraft(i)"
+          title="Rimuovi Aereo">
+          <img class="icon" src="../../../assets/Interface_icons/delete.svg" alt="Rimuovi">
+        </button>
+      </div>
+
+      <!-- Seats List -->
+      <div class="seats-container">
+        <div *ngFor="let s of ac.seats; let j = index" class="seat-row">
+          <img class="icon seat-icon" src="../../../assets/Interface_icons/seat-airline.svg" alt="Seat">
+          <input
+            class="input seat-number"
+            placeholder="Numero Seat"
+            [(ngModel)]="s._numSeat"
+            name="seatNum_update{{i}}_{{j}}">
+          <input
+            class="input seat-class"
+            placeholder="Classe"
+            [(ngModel)]="s.class"
+            name="class_update{{i}}_{{j}}">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="s.legroom"
+              name="leg_update{{i}}_{{j}}">
+            <img class="icon seat-icon" src="../../../assets/Interface_icons/legroom.svg" alt="Seat">
+          </label>
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="s.isFree"
+              name="isFree_update{{i}}_{{j}}">
+            <img class="icon seat-icon" src="../../../assets/Interface_icons/free_seat.svg" alt="Seat">
+          </label>
+          <button
+            type="button"
+            class="icon-btn remove-seat"
+            (click)="removeSeat(i,j)"
+            title="Rimuovi Seat">
+            <img class="icon" src="../../../assets/Interface_icons/minus.svg" alt="–">
+          </button>
+        </div>
+
+        <button
+          type="button"
+          class="btn add-seat"
+          (click)="addSeat(i)">
+          <img class="icon" src="../../../assets/Interface_icons/plus.svg" alt="+">
+          Aggiungi Seat
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Aircraft-level Actions -->
+    <div class="aircraft-actions">
+      <button
+        type="button"
+        class="btn update-aircraft"
+        (click)="updateInfo()">
+        <img class="icon" src="../../../assets/Interface_icons/save.svg" alt="Aggiorna">
+        Aggiorna Aerei
+      </button>
+      <button
+        type="button"
+        class="btn add-aircraft"
+        (click)="addAircraft()">
+        <img class="icon" src="../../../assets/Interface_icons/plus.svg" alt="+">
+        Aggiungi Aereo
+      </button>
+    </div>
+  </div>
+
+  <!-- Form-level Action -->
+  <button
+    type="button"
+    class="btn update-all"
+    (click)="updateAirlines()">
+    <img class="icon" src="../../../assets/Interface_icons/save.svg" alt="Aggiorna">
+    Aggiorna Dati
+  </button>
+</form>
+
+  </div>
+
+  <div *ngIf="showSetup">
+    <h2>{{ mustChangePassword ? 'Primo accesso: completa il setup' : 'Setup / Cambia Password' }}</h2>
+    <form>
+      <div><label>Nome:</label><input [(ngModel)]="setupData.name" name="name_s"></div>
+      <div><label>Mail:</label><input type="email" [(ngModel)]="setupData.mail" name="mail_s"></div>
+      <div><label>Password:</label><input type="password" [(ngModel)]="setupData.password" name="pwd_s"></div>
+      <div class="aircrafts-container">
+  <h4>
+    <img class="icon" src="../../../assets/Interface_icons/plane.svg" alt="Aereo">
+    Aerei
+  </h4>
+
+  <div *ngFor="let ac of setupData.aircrafts; let i = index" class="aircraft-card">
+
+    <!-- Header Aereo -->
+    <div class="aircraft-header">
+      <input class="input aircraft-number"
+             [(ngModel)]="ac._numAircraft"
+             name="numA_s{{ i }}"
+             placeholder="Numero Aereo">
+      <input class="input aircraft-model"
+             [(ngModel)]="ac.modello"
+             name="modello_s{{ i }}"
+             placeholder="Modello">
+      <button class="icon-btn remove-aircraft"
+              (click)="removeSetupAircraft(i)"
+              title="Rimuovi Aereo">
+        <img class="icon" src="../../../assets/Interface_icons/delete.svg" alt="Rimuovi">
+      </button>
+    </div>
+
+    <!-- Lista seats -->
+    <div class="seats-container">
+      <div *ngFor="let s of ac.seats; let j = index" class="seat-row">
+        <img class="icon seat-icon" src="../../../assets/Interface_icons/seat-airline.svg" alt="Seat">
+        <input class="input seat-number"
+               [(ngModel)]="s._numSeat"
+               name="seatNum_s{{ i }}_{{ j }}"
+               placeholder="Numero Seat">
+        <input class="input seat-class"
+               [(ngModel)]="s.class"
+               name="class_s{{ i }}_{{ j }}"
+               placeholder="Classe">
+        <label class="checkbox-label">
+          <input type="checkbox"
+                 [(ngModel)]="s.legroom"
+                 name="leg_s{{ i }}_{{ j }}">
+          Legroom
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox"
+                 [(ngModel)]="s.isFree"
+                 name="free_s{{ i }}_{{ j }}">
+          Libero
+        </label>
+        <button class="icon-btn remove-seat"
+                (click)="removeSetupSeat(i, j)"
+                title="Rimuovi Seat">
+          <img class="icon" src="../../../assets/Interface_icons/minus.svg" alt="–">
+        </button>
+      </div>
+
+      <button class="btn add-seat" (click)="addSetupSeat(i)">
+        <img class="icon" src="../../../assets/Interface_icons/plus.svg" alt="+">
+        Aggiungi Seat
+      </button>
+    </div>
+
+  </div>
+
+  <button class="btn add-aircraft" (click)="addSetupAircraft()">
+    <img class="icon" src="../../../assets/Interface_icons/plus.svg" alt="+">
+    Aggiungi Aereo
+  </button>
+</div>
+
+      <button type="button" (click)="setupAirline()">Completa Setup</button>
+    </form>
+  </div>
+
+  <app-flights></app-flights>
+</div>

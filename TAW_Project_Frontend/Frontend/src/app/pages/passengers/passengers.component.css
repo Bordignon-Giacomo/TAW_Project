@@ -1,0 +1,256 @@
+:root {
+  --primary: #3498db;
+  --success: #2ecc71;
+  --danger: #e74c3c;
+  --light-bg: #f8f8f8;
+  --text-dark: #2c3e50;
+  --text-light: #fff;
+}
+
+/* ------------------------------------
+   PANEL UTENTE
+------------------------------------- */
+.auth-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 300px;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+/* Pulsante iniziale */
+.auth-panel .edit-btn {
+  background: var(--primary);
+  color: var(--text-light);
+  margin-bottom: 1rem;
+  width: 100%;
+  justify-content: center;
+}
+
+/* Form di modifica */
+.edit-form {
+  padding: 0.5rem 0;
+  border-top: 1px solid #ddd;
+  margin-top: 1rem;
+}
+
+.edit-form h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: var(--text-dark);
+}
+
+.form-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.form-field input {
+  flex: 1;
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.form-actions .btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  justify-content: center;
+}
+
+.save-btn {
+  background: var(--success);
+  color: var(--text-light);
+}
+
+.cancel-btn {
+  background: #f0f0f0;
+  color: var(--text-dark);
+}
+
+.delete-btn {
+  background: var(--danger);
+  color: var(--text-light);
+}
+
+/* Icone */
+.field-icon {
+  width: 20px;
+  height: 20px;
+}
+
+
+/* ------------------------------------
+   SEZIONE BIGLIETTI
+------------------------------------- */
+.tickets-section {
+  font-family: 'Segoe UI', sans-serif;
+  color: var(--text-dark);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.tickets-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.ticket-card {
+  background: var(--light-bg);
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ticket-card p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.delete-ticket-btn {
+  align-self: flex-end;
+  background: var(--danger);
+  color: var(--text-light);
+}
+
+.empty-message {
+  font-style: italic;
+  color: #888;
+}
+
+/* ------------------------------------
+   PANEL ACQUISTO
+------------------------------------- */
+.purchase-panel {
+  margin: 2rem 0;
+  background: rgba(255,255,255,0.9);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  max-width: 400px;
+}
+
+.purchase-panel h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-dark);
+}
+
+.purchase-panel .form-field {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.buy-btn {
+  background: var(--primary);
+  color: var(--text-light);
+  width: 100%;
+  margin-top: 1rem;
+}
+
+/* 🔘  Pulsante Toggle in alto a destra, 5 cm dall’alto */
+.sidebar-toggle {
+  position: fixed;
+  top: 5cm;
+  right: 1rem;
+  z-index: 110;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* 🔘 Overlay semi-trasparente per chiusura cliccando fuori */
+.sidebar-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.3);
+  z-index: 100;
+}
+
+/* 🔘 Sidebar base (nascosta a destra) */
+.auth-panel.right {
+  position: fixed;
+  top: 0; right: -300px;      /* a destra dello schermo */
+  width: 300px; height: 100vh;
+  background: rgba(255,255,255,0.95);
+  box-shadow: -2px 0 8px rgba(0,0,0,0.1);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 105;
+  transition: right 0.3s ease;
+}
+
+/* 🔘 Stato ‘aperta’ */
+.auth-panel.right.open {
+  right: 0;                   /* scorre in vista */
+}
+
+/* 🔘 Spazio per il contenuto principale su desktop */
+.main-content {
+  transition: margin-right 0.3s ease;
+  margin-right: 0;            /* nessun offset quando chiusa */
+}
+
+/* quando la sidebar è aperta, spinge il contenuto */
+.auth-panel.right.open ~ .main-content {
+  margin-right: 300px;
+}
+
+/* 🔘 Responsive: overlay full-width su mobile */
+@media (max-width: 768px) {
+  .auth-panel.right {
+    width: 100%; right: -100%;
+  }
+  .auth-panel.right.open {
+    right: 0;
+  }
+  .auth-panel.right.open ~ .main-content {
+    margin-right: 0;           /* non spingere il contenuto */
+  }
+}
