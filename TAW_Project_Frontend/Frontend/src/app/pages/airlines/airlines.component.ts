@@ -108,18 +108,34 @@ updateAirlines() {
   });
 }
 
+loadAircrafts(){
+  this.airlinesService.getAircraftByMail(this.us.get_mail()).subscribe({
+    next: (aircrafts: Aircrafts[]) => {
+      this.updateData.aircrafts = aircrafts;
+    },
+    error: err => console.error("Errore caricamento aircrafts", err)
+  });
+}
+
 updateInfo() {
-  const id = this.us.get_mail();
-  // Itera su tutti gli aerei presenti nel form
-  for (const aircraft of this.updateData.aircrafts) {
-    // Se non ha _id, è un nuovo aereo da salvare
-    if (!(aircraft as any)._id) {
-      this.addAircraftToBackend(aircraft); // salva nella collezione Aircrafts
-      /*this.airlinesService.getAirlineByMail(id).subscribe(res => {
-        this.updateData = res;
-      });*/
+  // Carica gli aerei esistenti associati all'utente, senza modificare updateData
+  this.airlinesService.getAircraftByMail(this.us.get_mail()).subscribe({
+    next: (existingAircrafts: Aircrafts[]) => {
+      // Ottieni la lista dei numeri identificativi esistenti
+      const existingNums = existingAircrafts.map(ac => ac._numAircraft);
+
+      // Controlla ogni aereo nella lista aggiornata
+      for (const aircraft of this.updateData.aircrafts) {
+        if (!existingNums.includes(aircraft._numAircraft)) {
+          // Se il numero dell'aereo non esiste ancora, lo aggiungo al backend
+          this.addAircraftToBackend(aircraft);
+        }
+      }
+    },
+    error: err => {
+      console.error('Errore durante il caricamento degli aircraft:', err);
     }
-  }
+  });
   
   // Salva nuovi biglietti
   for (const ticket of this.ticket.tickets) {
@@ -153,6 +169,7 @@ updateInfo() {
     this.aircraftsService.addAircraft(aircraft).subscribe({
       next: () => {
         console.log(`Aereo ${aircraft._numAircraft} salvato correttamente`);
+        this.loadAircrafts();
       },
       error: err => {
         console.error("Errore salvataggio aereo:", err);
@@ -163,6 +180,7 @@ updateInfo() {
     this.aircraftsService.deleteAircraft(id).subscribe({
       next: () => {
         console.log(`Aereo ${id} eliminato correttamente dal backend`);
+        this.loadAircrafts();
       },
       error: err => {
         console.error('Errore eliminazione aereo:', err);

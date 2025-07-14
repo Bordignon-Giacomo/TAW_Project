@@ -1,13 +1,23 @@
-<h2>📊 Dashboard {{ username }}</h2>
+<header class="dashboard-header">
+  <h2 class="title">
+    <span class="emoji">📊</span>
+    Dashboard 
+    <span class="username">{{ username }}</span>
+  </h2>
 
-<div class="auth-buttons" style="position:absolute; top:20px; right:20px;">
-  <button (click)="logout()">Logout</button>
-</div>
-
-<!-- Debug state -->
-<!--<p *ngIf="!aircrafts">Aircrafts è undefined</p>
-<p *ngIf="aircrafts && aircrafts.length === 0">Aircrafts è vuoto</p>
-<p *ngIf="aircrafts && aircrafts.length > 0">Aircrafts popolato con {{aircrafts.length}} elementi</p>-->
+  <button
+    class="logout-btn"
+    (click)="logout()"
+    aria-label="Logout"
+    title="Esci dal Dashboard"
+  >
+    <img
+      src="../../../assets/Interface_icons/user-logout.svg"
+      alt="Logout"
+      class="icon"
+    />
+  </button>
+</header>
 
 <div *ngIf="adminRole">
   <app-admin></app-admin>

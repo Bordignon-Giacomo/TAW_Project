@@ -148,16 +148,29 @@ app.post('/users', (req,res,next) => {
     })
 });
 
+// get all passengers
+app.get('/users', auth, (req, res, next) => {
+    if(!users.newUser(req.auth).hasAdminRole()){
+        return next({ statusCode:404, error: true, errormessage: "Unauthorized: user is not an administrator."} );
+    }
+    users.getModel().find({roles: 'passenger'}).then((data) => {
+        return res.status(200).json(data);
+    }).catch((reason) => {
+        return next({statuscode: 404, error: true, errormessage: "DB error " + reason});
+    });
+});
+
+
 //delete user
-app.delete('/users/:id', auth, (req,res,next) => {
+app.delete('/users/:mail', auth, (req,res,next) => {
     if( !users.newUser(req.auth).hasAdminRole() ) {
         return next({ statusCode:404, error: true, errormessage: "Unauthorized: user is not an administrator."} );
     }
-    users.getModel().deleteOne( {_id: req.params.id }).then(( q )=> {
+    users.getModel().deleteOne( {mail: req.params.mail }).then(( q )=> {
         if( q.deletedCount > 0 )
             return res.status(200).json( {error:false, errormessage:""} );
         else
-            return res.status(404).json( {error:true, errormessage:"Invalid user ID"} );
+            return res.status(404).json( {error:true, errormessage:"Invalid user mail"} );
         }).catch( (reason)=> {
             return next({ statusCode:404, error: true, errormessage: "DB error: "+reason });
         })

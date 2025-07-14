@@ -83,5 +83,33 @@
       </tbody>
     </table>
   </section>
+
+  <section class="card">
+    <h2>Utenti</h2>
+    <table>
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Mail</th>
+            <th>passportID</th>
+            <th>Ruolo</th>
+            <th>Azioni</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of passengers">
+            <ng-container>
+              <td>{{ u.username }}</td>
+              <td>{{ u.mail }}</td>
+              <td>{{ u.passportID }}</td>
+              <td>{{ u.roles }}</td>
+              <td class="actions">
+                <button (click)="deletePassangers(u.mail)">🗑️</button>
+              </td>
+            </ng-container>
+          </tr>
+        </tbody>
+    </table>
+  </section>
 </div>
 
