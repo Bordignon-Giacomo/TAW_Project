@@ -166,7 +166,9 @@ export class PassengersComponent implements OnInit {
   deleteTickets(ticket: Tickets) {
     this.ticketsService.deleteTickets(ticket._code).subscribe({
       next: () => this.ticketsService.getTickets().subscribe({
-        next: (data) => this.tickets = data,
+        next: (data) => this.tickets = data.map(t => ({_code : t._code, user : this.us.get_mail(), 
+                                    flight : t.flight, seat : t.seat, 
+                                    price : t.price, numBag : t.numBag, editing: false})),
         error: (err) => console.error(err)
       }),
       error: (err) => console.error(err)

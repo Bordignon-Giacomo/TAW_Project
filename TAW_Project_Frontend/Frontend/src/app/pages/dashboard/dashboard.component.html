@@ -26,39 +26,6 @@
 <div *ngIf="airlineRole">
   <app-airlines></app-airlines>
 
-  <section style="margin-top:20px;">
-    <h3 class="section-title">
-  <img src="../../../assets/Interface_icons/plane.svg" alt="Aerei" class="icon" />
-  I tuoi Aerei
-</h3>
-
-<div *ngIf="aircrafts.length > 0; else noAircraft" class="aircraft-list">
-  <div *ngFor="let ac of aircrafts" class="aircraft-card">
-    <div class="aircraft-info">
-      <p><strong>Modello:</strong> {{ ac.modello || 'N/A' }}</p>
-      <p><strong>Numero Aereo:</strong> {{ ac._numAircraft || 'N/A' }}</p>
-    </div>
-
-    <ul *ngIf="ac.seats && ac.seats.length; else noSeats" class="seat-list">
-      <li *ngFor="let seat of ac.seats" class="seat-item">
-        <span><img src="../../../assets/Interface_icons/seat-airline.svg" class="icon"/> <strong>{{ seat._numSeat || 'N/A' }}</strong> {{ seat.class || 'N/A' }}</span>
-        <span><img src="../../../assets/Interface_icons/legroom.svg" class="icon"/> {{ seat.legroom ? 'Sì' : 'No' }}</span>
-        <span><img src="../../../assets/Interface_icons/free_seat.svg" class="icon"/> {{ seat.isFree ? 'Sì' : 'No' }}</span>
-      </li>
-    </ul>
-
-    <ng-template #noSeats>
-      <p class="no-seats">Nessun posto disponibile per questo aereo.</p>
-    </ng-template>
-  </div>
-</div>
-
-<ng-template #noAircraft>
-  <p class="no-aircraft">Non hai ancora aerei registrati.</p>
-</ng-template>
-</section>
-
-
 <section class="tickets-section">
   <h3 class="section-title">🎫 I tuoi Biglietti</h3>
   <button class="btn add-btn" (click)="aggiungiBiglietto()">➕ Aggiungi Biglietto</button>

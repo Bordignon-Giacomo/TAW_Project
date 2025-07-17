@@ -6,6 +6,10 @@ import { UserHttpService } from 'src/app/user-http.service';
 import { Seats } from 'src/app/services/seats.service';
 import { Router } from '@angular/router';
 
+interface AircraftUI extends Aircrafts {
+  editing: boolean;
+}
+
 @Component({
   selector: 'app-airlines',
   templateUrl: './airlines.component.html',
@@ -13,7 +17,7 @@ import { Router } from '@angular/router';
 })
 export class AirlinesComponent implements OnInit {
   setupData: any = { aircrafts: [] };
-  updateData: any = { aircrafts: [] };
+  updateData:{ aircrafts: AircraftUI[] }= { aircrafts: [] };
   ticket: any = { tickets: [] };
   mustChangePassword = false;
   showSetup = false;
@@ -37,7 +41,10 @@ export class AirlinesComponent implements OnInit {
         } 
         else{
           this.showSetup = false;
-          if (res.aircrafts) this.updateData.aircrafts = res.aircrafts;
+          if (res.aircrafts){
+            const aerei = res.aircrafts || [];
+            this.updateData.aircrafts = aerei.map((ac: Aircrafts) => ({ ...ac, editing: false }));
+          }
           if (res.ticket) this.ticket.tickets = res.ticket;
           if (res.name) this.airlineName = res.name;
           if (res.revenue) this.airlineRevenue = res.revenue;
@@ -108,10 +115,14 @@ updateAirlines() {
   });
 }
 
-loadAircrafts(){
+loadAircrafts() {
   this.airlinesService.getAircraftByMail(this.us.get_mail()).subscribe({
     next: (aircrafts: Aircrafts[]) => {
-      this.updateData.aircrafts = aircrafts;
+      // Mapping ogni oggetto aircraft aggiungendo editing: false
+      this.updateData.aircrafts = aircrafts.map(ac => ({
+        ...ac,
+        editing: false
+      }));
     },
     error: err => console.error("Errore caricamento aircrafts", err)
   });
@@ -154,7 +165,7 @@ updateInfo() {
   removeSetupSeat(ai:number, si:number){ this.setupData.aircrafts[ai].seats.splice(si,1); }
 
   addAircraft() { 
-    this.updateData.aircrafts.push({ _numAircraft:'', modello:'', seats:[] });
+    this.updateData.aircrafts.push({ _numAircraft:'', modello:'', seats:[], editing: true });
   }
   removeAircraft(i:number){ 
     const removed = this.updateData.aircrafts.splice(i,1)[0]; 
@@ -187,6 +198,27 @@ updateInfo() {
       }
     });
   }
+
+  startEditAircraft(i: number) {
+    this.updateData.aircrafts[i].editing = true;
+  }
+
+  cancelEditAircraft(i: number) {
+    this.updateData.aircrafts[i].editing = false;
+  }
+
+  saveAircraft(i: number) {
+    const ac = this.updateData.aircrafts[i];
+    this.aircraftsService.updateAircraft(ac._numAircraft, ac).subscribe({
+      next: () => {
+        console.log(`Salvato aereo ${ac._numAircraft}`);
+        ac.editing = false;
+      },
+      error: err => console.error('Errore salvataggio', err)
+    });
+  }
+
+
 
   // Ticket management
   addTicket() {

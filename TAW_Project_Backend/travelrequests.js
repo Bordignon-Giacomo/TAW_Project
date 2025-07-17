@@ -421,6 +421,10 @@ app.put('/aircrafts/:id', auth, async (req, res, next) => {
             if (req.body.seats) {
                 aircraft.seats = req.body.seats;
             }
+            const aereo = await airlines.getModel().findOne({ mail: req.auth.mail });
+            aereo.aircrafts = aereo.aircrafts.filter(a => a._numAircraft !== aircraft._numAircraft);
+            aereo.aircrafts.push(aircraft);
+            await aereo.save();
             const updatedAircraft = aircrafts.getModel().findOneAndUpdate({ _numAircraft: userId_aircrafts }, aircraft).then(() => {
                 return res.status(200).json({ error: false, errormessage: "", id: updatedAircraft._numAircraft });
             }).catch(() => {
@@ -558,6 +562,11 @@ app.post('/tickets', auth, async (req, res, next) => {
             if (!airlineUser) {
                 return next({ statuscode: 404, error: true, errormessage: "Biglietto non associato a nessuna compagnia" });
             }
+            const company = await airlines.getModel().findOne({
+                mail: airlineUser.mail
+            });
+            company.revenue += ticket.price;
+            await company.save();
             const passengerUser = await users.getModel().findOne({ mail: req.auth.mail });
             ticket.user = passengerUser._id;
             await ticket.save();

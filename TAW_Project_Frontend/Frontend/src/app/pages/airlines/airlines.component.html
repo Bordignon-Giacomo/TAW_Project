@@ -1,11 +1,16 @@
 <div class="container">
-  <div *ngIf="!mustChangePassword">
-    <button (click)="switchToUpdate()">Aggiorna Dati Compagnia</button>
-    <button (click)="switchToSetup()">Cambia Password / Setup</button>
-  </div>
+  <div *ngIf="!mustChangePassword" class="company-actions">
+  <button class="btn action" (click)="switchToUpdate()">
+    ✏️ Modifica Dati Compagnia
+  </button>
+  <button class="btn action" (click)="switchToSetup()">
+    🔐 Cambia Password / Setup
+  </button>
+</div>
+
 
   <div *ngIf="!showSetup">
-    <h2>Aggiorna Compagnia Aerea</h2>
+    <h2>Compagnia Aerea</h2>
     <form class="form-container">
 
   <!-- Airline Info -->
@@ -41,74 +46,56 @@
 
     <div *ngFor="let ac of updateData.aircrafts; let i = index" class="aircraft-card">
 
-      <!-- Header Aereo -->
-      <div class="aircraft-header">
-        <input
-          class="input aircraft-number"
-          placeholder="Numero Aereo"
-          [(ngModel)]="ac._numAircraft"
-          name="numA_update{{i}}">
-        <input
-          class="input aircraft-model"
-          placeholder="Modello"
-          [(ngModel)]="ac.modello"
-          name="modello_update{{i}}">
-        <button
-          type="button"
-          class="icon-btn remove-aircraft"
-          (click)="removeAircraft(i)"
-          title="Rimuovi Aereo">
-          <img class="icon" src="../../../assets/Interface_icons/delete.svg" alt="Rimuovi">
-        </button>
-      </div>
-
-      <!-- Seats List -->
-      <div class="seats-container">
-        <div *ngFor="let s of ac.seats; let j = index" class="seat-row">
-          <img class="icon seat-icon" src="../../../assets/Interface_icons/seat-airline.svg" alt="Seat">
-          <input
-            class="input seat-number"
-            placeholder="Numero Seat"
-            [(ngModel)]="s._numSeat"
-            name="seatNum_update{{i}}_{{j}}">
-          <input
-            class="input seat-class"
-            placeholder="Classe"
-            [(ngModel)]="s.class"
-            name="class_update{{i}}_{{j}}">
-          <label class="checkbox-label">
-            <input
-              type="checkbox"
-              [(ngModel)]="s.legroom"
-              name="leg_update{{i}}_{{j}}">
-            <img class="icon seat-icon" src="../../../assets/Interface_icons/legroom.svg" alt="Seat">
-          </label>
-          <label class="checkbox-label">
-            <input
-              type="checkbox"
-              [(ngModel)]="s.isFree"
-              name="isFree_update{{i}}_{{j}}">
-            <img class="icon seat-icon" src="../../../assets/Interface_icons/free_seat.svg" alt="Seat">
-          </label>
-          <button
-            type="button"
-            class="icon-btn remove-seat"
-            (click)="removeSeat(i,j)"
-            title="Rimuovi Seat">
-            <img class="icon" src="../../../assets/Interface_icons/minus.svg" alt="–">
-          </button>
+      <!-- ▶ VISUALIZZAZIONE -->
+      <ng-container *ngIf="!ac.editing">
+        <div class="aircraft-info">
+          <p><strong>Numero Aereo:</strong> {{ ac._numAircraft || 'N/A' }}</p>
+          <p><strong>Modello:</strong> {{ ac.modello || 'N/A' }}</p>
         </div>
 
-        <button
-          type="button"
-          class="btn add-seat"
-          (click)="addSeat(i)">
-          <img class="icon" src="../../../assets/Interface_icons/plus.svg" alt="+">
-          Aggiungi Seat
-        </button>
-      </div>
+        <ul class="seat-list">
+          <li *ngFor="let s of ac.seats" class="seat-item">
+            <span><img src="../../../assets/Interface_icons/seat-airline.svg" class="icon"/> <strong>{{ s._numSeat }}</strong> {{ s.class }}</span>
+            <span><img src="../../../assets/Interface_icons/legroom.svg" class="icon"/> {{ s.legroom ? 'Sì' : 'No' }}</span>
+            <span><img src="../../../assets/Interface_icons/free_seat.svg" class="icon"/> {{ s.isFree ? 'Sì' : 'No' }}</span>
+          </li>
+        </ul>
+
+        <div class="actions">
+          <button class="btn edit" (click)="startEditAircraft(i)">✏️ Modifica</button>
+          <button class="btn delete" (click)="removeAircraft(i)">🗑️ Elimina</button>
+        </div>
+      </ng-container>
+
+      <!-- 🛠 MODIFICA -->
+      <ng-container *ngIf="ac.editing">
+        <div class="aircraft-header">
+          <input class="input aircraft-number" [(ngModel)]="ac._numAircraft" name="num{{i}}" placeholder="Numero Aereo">
+          <input class="input aircraft-model" [(ngModel)]="ac.modello" name="modello{{i}}" placeholder="Modello">
+        </div>
+
+        <div class="seats-container">
+          <div *ngFor="let s of ac.seats; let j = index" class="seat-row">
+            <!-- campi modificabili -->
+            <input [(ngModel)]="s._numSeat" name="seatNum{{i}}_{{j}}" placeholder="Numero Seat">
+            <input [(ngModel)]="s.class" name="class{{i}}_{{j}}" placeholder="Classe">
+            <label><input type="checkbox" [(ngModel)]="s.legroom" name="leg{{i}}_{{j}}"> Legroom</label>
+            <label><input type="checkbox" [(ngModel)]="s.isFree" name="free{{i}}_{{j}}"> Libero</label>
+            <button type="button" class="btn remove-seat" (click)="removeSeat(i,j)">−</button>
+          </div>
+          <button type="button" class="btn add-seat" (click)="addSeat(i)">+ Aggiungi Seat</button>
+        </div>
+
+        <!-- Pulsanti azione -->
+        <div class="actions">
+          <button class="btn save" (click)="saveAircraft(i)">💾 Salva</button>
+          <button class="btn cancel" (click)="cancelEditAircraft(i)">❌ Annulla</button>
+          <button class="btn delete" (click)="removeAircraft(i)">🗑️ Elimina</button>
+        </div>
+      </ng-container>
 
     </div>
+
 
     <!-- Aircraft-level Actions -->
     <div class="aircraft-actions">
@@ -129,13 +116,15 @@
     </div>
   </div>
 
+  
+
   <!-- Form-level Action -->
   <button
     type="button"
     class="btn update-all"
     (click)="updateAirlines()">
     <img class="icon" src="../../../assets/Interface_icons/save.svg" alt="Aggiorna">
-    Aggiorna Dati
+    Aggiorna Dati Compagnia
   </button>
 </form>
 

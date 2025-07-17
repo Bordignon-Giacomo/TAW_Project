@@ -35,4 +35,13 @@ export class AircraftsService {
       })
     });
   }
+
+  updateAircraft(id: string, data: {_numAircraft: string, modello: string, seats: Seats[], editing: boolean}) : Observable<any> {
+    return this.http.put(this.us.url + "/aircrafts/" + id, data,{
+      headers: new HttpHeaders({
+        authorization: 'Bearer ' + this.us.get_token(),
+        'Content-Type': 'application/json'
+      })
+    });
+  }
 }
