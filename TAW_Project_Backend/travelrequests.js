@@ -562,9 +562,7 @@ app.post('/tickets', auth, async (req, res, next) => {
             if (!airlineUser) {
                 return next({ statuscode: 404, error: true, errormessage: "Biglietto non associato a nessuna compagnia" });
             }
-            const company = await airlines.getModel().findOne({
-                mail: airlineUser.mail
-            });
+            const company = await airlines.getModel().findOne({ mail: airlineUser.mail });
             company.revenue += ticket.price;
             await company.save();
             const passengerUser = await users.getModel().findOne({ mail: req.auth.mail });
@@ -820,84 +818,83 @@ app.get("/search", async (req, res, next) => {
         dataOra: req.query.dataOra
     };
     try {
-        const route = await routes.getModel().findOne({ departure: search.depart, destination: search.destination });
-        if (!route) {
-            return next({ statusCode: 404, error: true, errormessage: "Route not found" });
-        }
+        const routesDirectAndLayover = await routes.getModel().find({ departure: search.depart, destination: search.destination });
+        const result = [];
         // Se non ci sono scali
-        if (!route.layoverFuel || route.layoverFuel.length === 0) {
-            const directFlights = await flights.getModel().find({ route: route._id, dataOra: { $gte: new Date(search.dataOra) } });
-            const flightRes = [];
-            for (let f of directFlights) {
-                // biglietti -> volo -> aereo-> posti liberi
-                let t = await tickets.getModel().find({ flight: f._flightCode });
-                let aereo = await aircrafts.getModel().findOne({ _numAircraft: f.aircraft });
-                let postiLiberi = aereo.seats.filter(s => s.isFree === true);
-                const availableTickets = t.filter(ticket => postiLiberi.some(seat => String(seat._numSeat) === String(ticket.seat)));
-                if (availableTickets.length === 0)
-                    continue;
-                /*let r = await routes.getModel().findOne({_id : f.route});
-                let t = await tickets.getModel().find({flight : f._flightCode});
-                let aircraft = await aircrafts.getModel().findOne({_numAircraft: f.aircraft});
-                const freeSeats = aircraft?.seats?.filter(seat => seat.isFree === true) || [];*/
-                flightRes.push({ flightCode: f._flightCode, dataOra: f.dataOra, departure: route.departure, destination: route.destination, duration: f.duration, price: availableTickets[0].price, seats: postiLiberi });
-            }
-            return res.status(200).json(flightRes);
-        }
-        const validConnections = [];
-        for (const layover of route.layoverFuel) {
-            const firstLegRoute = await routes.getModel().findOne({ departure: search.depart, destination: layover });
-            const secondLegRoute = await routes.getModel().findOne({ departure: layover, destination: search.destination });
-            //if (!firstLegRoute || !secondLegRoute) continue;
-            const firstFlights = await flights.getModel().find({ route: firstLegRoute._id, dataOra: { $gte: new Date(search.dataOra) } });
-            const secondFlights = await flights.getModel().find({ route: secondLegRoute._id });
-            for (let first of firstFlights) {
-                const firstArrival = new Date(first.dataOra.getTime() + first.duration * 60000);
-                const ticketsFirst = await tickets.getModel().find({ flight: first._flightCode });
-                const aircraftFirst = await aircrafts.getModel().findOne({ _numAircraft: first.aircraft });
-                const freeSeatsFirst = aircraftFirst?.seats.filter(seat => seat.isFree) || [];
-                const availableTicketsFirst = ticketsFirst.filter(ticket => freeSeatsFirst.some(seat => String(seat._numSeat) === String(ticket.seat)));
-                for (let second of secondFlights) {
-                    const secondDeparture = new Date(second.dataOra);
-                    const diffHours = (secondDeparture.getTime() - firstArrival.getTime()) / (1000 * 60 * 60);
-                    const ticketsSecond = await tickets.getModel().find({ flight: second._flightCode });
-                    const aircraftSecond = await aircrafts.getModel().findOne({ _numAircraft: second.aircraft });
-                    const freeSeatsSecond = aircraftSecond?.seats.filter(seat => seat.isFree) || [];
-                    const availableTicketsSecond = ticketsSecond.filter(ticket => freeSeatsSecond.some(seat => String(seat._numSeat) === String(ticket.seat)));
-                    if (availableTicketsFirst.length === 0 || availableTicketsSecond.length === 0)
+        for (const route of routesDirectAndLayover) {
+            if (!route.layoverFuel || route.layoverFuel.length === 0) {
+                const directFlights = await flights.getModel().find({ route: route._id, dataOra: { $gte: new Date(search.dataOra) } });
+                for (let f of directFlights) {
+                    // biglietti -> volo -> aereo-> posti liberi
+                    let t = await tickets.getModel().find({ flight: f._flightCode });
+                    let aereo = await aircrafts.getModel().findOne({ _numAircraft: f.aircraft });
+                    let postiLiberi = aereo.seats.filter(s => s.isFree === true);
+                    const availableTickets = t.filter(ticket => postiLiberi.some(seat => String(seat._numSeat) === String(ticket.seat)));
+                    if (availableTickets.length === 0)
                         continue;
-                    let fst = {
-                        flightCode: first._flightCode,
-                        dataOra: first.dataOra,
-                        departure: search.depart,
-                        destination: layover,
-                        duration: first.duration,
-                        price: availableTicketsFirst[0].price,
-                        seats: freeSeatsFirst
-                    };
-                    let snd = {
-                        flightCode: second._flightCode,
-                        dataOra: second.dataOra,
-                        departure: layover,
-                        destination: search.destination,
-                        duration: second.duration,
-                        price: availableTicketsSecond[0].price,
-                        seats: freeSeatsSecond
-                    };
-                    if (diffHours >= 2) {
-                        validConnections.push({
-                            layover,
-                            firstLeg: fst,
-                            secondLeg: snd
-                        });
+                    result.push({ flightCode: f._flightCode, dataOra: f.dataOra, departure: route.departure, destination: route.destination, duration: f.duration, price: availableTickets[0].price, seats: postiLiberi });
+                }
+                return res.status(200).json(result);
+            }
+        }
+        const routesWithLayover = await routes.getModel().find({ departure: search.depart, layoverFuel: { $exists: true, $ne: [] } });
+        for (const route of routesWithLayover) {
+            for (const layover of route.layoverFuel) {
+                const firstLegRoutes = await routes.getModel().find({ departure: search.depart, destination: layover });
+                const secondLegRoutes = await routes.getModel().find({ departure: layover, destination: search.destination });
+                for (const firstRoute of firstLegRoutes) {
+                    const firstFlights = await flights.getModel().find({ route: firstRoute._id, dataOra: { $gte: new Date(search.dataOra) } });
+                    for (const secondRoute of secondLegRoutes) {
+                        const secondFlights = await flights.getModel().find({ route: secondRoute._id });
+                        for (const first of firstFlights) {
+                            const firstArrival = new Date(first.dataOra.getTime() + first.duration * 60000);
+                            const ticketsFirst = await tickets.getModel().find({ flight: first._flightCode });
+                            const aircraftFirst = await aircrafts.getModel().findOne({ _numAircraft: first.aircraft });
+                            if (!aircraftFirst)
+                                continue;
+                            const freeSeatsFirst = aircraftFirst.seats.filter(seat => seat.isFree);
+                            const availableTicketsFirst = ticketsFirst.filter(ticket => freeSeatsFirst.some(seat => String(seat._numSeat) === String(ticket.seat)));
+                            if (availableTicketsFirst.length === 0)
+                                continue;
+                            for (const second of secondFlights) {
+                                const secondDeparture = new Date(second.dataOra);
+                                const diffHours = (secondDeparture.getTime() - firstArrival.getTime()) / (1000 * 60 * 60);
+                                const ticketsSecond = await tickets.getModel().find({ flight: second._flightCode });
+                                const aircraftSecond = await aircrafts.getModel().findOne({ _numAircraft: second.aircraft });
+                                const freeSeatsSecond = aircraftSecond.seats.filter(seat => seat.isFree);
+                                const availableTicketsSecond = ticketsSecond.filter(ticket => freeSeatsSecond.some(seat => String(seat._numSeat) === String(ticket.seat)));
+                                if (availableTicketsSecond.length === 0)
+                                    continue;
+                                const firstLeg = {
+                                    flightCode: first._flightCode,
+                                    dataOra: first.dataOra,
+                                    departure: search.depart,
+                                    destination: layover,
+                                    duration: first.duration,
+                                    price: availableTicketsFirst[0].price,
+                                    seats: freeSeatsFirst
+                                };
+                                const secondLeg = {
+                                    flightCode: second._flightCode,
+                                    dataOra: second.dataOra,
+                                    departure: layover,
+                                    destination: search.destination,
+                                    duration: second.duration,
+                                    price: availableTicketsSecond[0].price,
+                                    seats: freeSeatsSecond
+                                };
+                                if (diffHours >= 2)
+                                    result.push({ layover, firstLeg, secondLeg });
+                            }
+                        }
                     }
                 }
             }
         }
-        if (validConnections.length === 0) {
-            return next({ statusCode: 404, error: true, errormessage: "No valid layover flights found" });
+        if (result.length === 0) {
+            return next({ statusCode: 404, error: true, errormessage: "No available flights found for this search" });
         }
-        return res.status(200).json(validConnections);
+        return res.status(200).json(result);
     }
     catch (reason) {
         return next({ statusCode: 500, error: true, errormessage: "Server error: " + reason });
