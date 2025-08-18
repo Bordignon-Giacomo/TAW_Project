@@ -46,9 +46,6 @@ airlineSchema.methods.getName = function () {
 airlineSchema.methods.getRevenue = function () {
     return this.revenue;
 };
-/*airlineSchema.methods.getTickets = function() : Tickets[] {
-    return this.tickets;
-}*/
 airlineSchema.methods.getAircrafts = function () {
     return this.aircrafts;
 };
@@ -58,9 +55,6 @@ airlineSchema.methods.setName = function (name) {
 airlineSchema.methods.setRevenue = function (revenue) {
     this.revenue = revenue;
 };
-/*airlineSchema.methods.setTickets = function(tickets : Tickets[]){
-    this.tickets = tickets;
-}*/
 airlineSchema.methods.setAircrafts = function (aircrafts) {
     this.aircrafts = aircrafts;
 };
